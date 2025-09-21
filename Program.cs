@@ -198,6 +198,9 @@ internal class Program
                 writer.Write(fontHeight);
             }
 
+            //総グリフ数（あとで書き込む）offset=6
+            writer.Write((byte)0);
+
             /*デフォルト文字色*/
 
             byte r = 255;
@@ -384,6 +387,9 @@ internal class Program
                     }
                 }
                 watch.Stop();
+
+                writer.Seek(6, SeekOrigin.Begin);
+                writer.Write((byte)used_idx.Count);
 
                 Console.WriteLine($"Compilation succeeded. Time elapsed:{watch.Elapsed.TotalMilliseconds} ms. Compiled characters:");
                 foreach(byte n in used_idx)
