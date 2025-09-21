@@ -6,6 +6,7 @@ using System.Text;
 
 internal class Logger
 {
+    private static bool m_Debug = false;
     public enum Level
     {
         Debug, Info, Warning, Error, Fatal
@@ -23,6 +24,11 @@ internal class Logger
 
     public static void Log(Level logLevel, string message, [CallerMemberName] string caller = "")
     {
+        if(logLevel == Level.Debug && !m_Debug)
+        {
+            return;
+        }
+
         DateTime dt = DateTime.Now;
         string dts = dt.ToString("yyyy-MM-dd HH:mm:ss:fff");
         Console.Write($"{dts} {caller} [");
@@ -30,6 +36,11 @@ internal class Logger
         Console.Write(logLevel.ToString());
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine($"] {message}");
+    }
+
+    public static void SetDebugMode(bool mode)
+    {
+        m_Debug = mode;
     }
 }
 
@@ -49,7 +60,15 @@ internal class Program
             return;
         }
 
-        Console.WriteLine("Bitmap Font File Compiler v1.0");
+        Console.ForegroundColor = ConsoleColor.White;
+
+        if (args.Length > 1 && (args[1] == "--debug" || args[1] == "-d"))
+        {
+            Console.WriteLine("Debug mode enabled.");
+            Logger.SetDebugMode(true);
+        }
+
+        Console.WriteLine("Bitmap Font File Compiler v1.01\nSee https://github.com/syunnPC/BinaryBitmapFontCompiler");
 
         Dictionary<string, string> parseValueTree = new();
         string fontfilename;
@@ -104,6 +123,7 @@ internal class Program
             Logger.Log(Logger.Level.Fatal, $"Font file {fontfilename} not found. Exiting.");
             Console.Write("\nPress any key to exit...");
             Console.ReadKey(true);
+            Console.ResetColor();
             return;
         }
         Logger.Log(Logger.Level.Info, $"FONT_FILE:{fontfilename}");
@@ -129,6 +149,7 @@ internal class Program
                 Logger.Log(Logger.Level.Fatal, $"Font parameter CHARSET not found. Exiting.");
                 Console.Write("\nPress any key to exit...");
                 Console.ReadKey(true);
+                Console.ResetColor();
                 return;
             }
             else
@@ -153,6 +174,7 @@ internal class Program
                 Logger.Log(Logger.Level.Fatal, $"Font parameter FONT_WIDTH not found. Exiting.");
                 Console.Write("\nPress any key to exit...");
                 Console.ReadKey(true);
+                Console.ResetColor();
                 return;
             }
             else
@@ -162,6 +184,7 @@ internal class Program
                     Logger.Log(Logger.Level.Fatal, $"Invalid FONT_WIDTH found : {font_width} is not a valid UInt8 value.");
                     Console.Write("\nPress any key to exit...");
                     Console.ReadKey(true);
+                    Console.ResetColor();
                     return;
                 }
                 if(fontWidth != 8 && fontWidth != 16 && fontWidth != 32 && fontWidth != 64)
@@ -169,6 +192,7 @@ internal class Program
                     Logger.Log(Logger.Level.Fatal, $"Unsupported/unimplemented FONT_WIDTH found : {font_width} is not supported.");
                     Console.Write("\nPress any key to exit...");
                     Console.ReadKey(true);
+                    Console.ResetColor();
                     return;
                 }
 
@@ -182,6 +206,7 @@ internal class Program
                 Logger.Log(Logger.Level.Fatal, $"Font parameter FONT_HEIGHT not found. Exiting.");
                 Console.Write("\nPress any key to exit...");
                 Console.ReadKey(true);
+                Console.ResetColor();
                 return;
             }
             else
@@ -191,6 +216,7 @@ internal class Program
                     Logger.Log(Logger.Level.Fatal, $"Invalid FONT_HEIGHT found : {font_height} is not a valid UInt8 value.");
                     Console.Write("\nPress any key to exit...");
                     Console.ReadKey(true);
+                    Console.ResetColor();
                     return;
                 }
 
@@ -329,6 +355,7 @@ internal class Program
                             Logger.Log(Logger.Level.Fatal, $"Font width mismatch:expected {font_width}, got {arr[i].Length}");
                             Console.Write("\nPress any key to exit...");
                             Console.ReadKey(true);
+                            Console.ResetColor();
                             return;
                         }
                         ulong bin;
@@ -337,6 +364,7 @@ internal class Program
                             Logger.Log(Logger.Level.Fatal, $"Invalid value detected:{arr[i]} is invalid value.");
                             Console.Write("\nPress any key to exit...");
                             Console.ReadKey(true);
+                            Console.ResetColor();
                             return;
                         }
 
@@ -349,6 +377,7 @@ internal class Program
                             Logger.Log(Logger.Level.Fatal, $"Invalid value detected:{arr[i]} is invalid value.");
                             Console.Write("\nPress any key to exit...");
                             Console.ReadKey(true);
+                            Console.ResetColor();
                             return;
                         }
                         res.Add(bin);
@@ -359,6 +388,7 @@ internal class Program
                         Logger.Log(Logger.Level.Fatal, $"Binary is missing for {ch}, expected {byte.Parse(font_height)} but got {res.Count}");
                         Console.Write("\nPress any key to exit...");
                         Console.ReadKey(true);
+                        Console.ResetColor();
                         return;
                     }
 
@@ -382,7 +412,7 @@ internal class Program
                                 writer.Write(n);
                                 break;
                             default:
-                                throw new System.Diagnostics.UnreachableException();
+                                throw new UnreachableException();
                         }
                     }
                 }
@@ -391,8 +421,8 @@ internal class Program
                 writer.Seek(6, SeekOrigin.Begin);
                 writer.Write((byte)used_idx.Count);
 
-                Console.WriteLine($"Compilation succeeded. Time elapsed:{watch.Elapsed.TotalMilliseconds} ms. Compiled characters:");
-                foreach(byte n in used_idx)
+                Console.WriteLine($"All {used_idx.Count} glyphs compilation successfully done. Time elapsed:{watch.Elapsed.TotalMilliseconds} ms. Compiled characters:");
+                foreach (byte n in used_idx)
                 {
                     Console.Write((char)n);
                     if(n != used_idx.Last())
@@ -403,6 +433,7 @@ internal class Program
 
                 Console.Write("\nPress any key to exit...");
                 Console.ReadKey(true);
+                Console.ResetColor();
             }
         }        
     }
